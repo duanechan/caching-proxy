@@ -24,5 +24,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", proxyHandler)
 	address := fmt.Sprintf(":%d", *port)
+
+	log.Println("[Caching Proxy] Listening on port", address)
 	log.Fatal(http.ListenAndServe(address, mux))
 }

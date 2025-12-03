@@ -3,6 +3,7 @@ package proxy
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 )
@@ -32,4 +33,13 @@ func normalizeURL(rawURL string) (string, error) {
 	normalized := parsedURL.Scheme + "://" + strings.ToLower(parsedURL.Host)
 
 	return normalized, nil
+}
+
+func errorResponse(w http.ResponseWriter, code int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(message))
+	w.WriteHeader(code)
+}
+
+func payloadResponse(w http.ResponseWriter, code int, entry *CacheEntry) {
 }

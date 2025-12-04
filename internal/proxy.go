@@ -25,8 +25,7 @@ func NewProxy(client *client, origin string, port int) (http.Handler, error) {
 }
 
 func (p proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	cacheKey := r.URL.RequestURI()
-	fullURL := p.origin + cacheKey
+	cacheKey := p.origin + r.URL.RequestURI()
 
 	start := time.Now()
 	entry, err := p.client.get(cacheKey)
@@ -37,14 +36,14 @@ func (p proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if entry != nil {
-		ServerLog(formatRequestLog(fullURL, end.Milliseconds()))
+		ServerLog(formatRequestLog(cacheKey, end.Milliseconds()))
 		w.Header().Set("X-Cache", "HIT")
 		setHeaders(w, entry)
 		return
 	}
 
 	start = time.Now()
-	res, err := http.Get(fullURL)
+	res, err := http.Get(cacheKey)
 	end = time.Since(start)
 	if err != nil {
 		errorResponse(w, 400, "Bad Request")
@@ -62,7 +61,7 @@ func (p proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ServerLog(formatRequestLog(fullURL, end.Milliseconds()))
+	ServerLog(formatRequestLog(cacheKey, end.Milliseconds()))
 	w.Header().Set("X-Cache", "MISS")
 	setHeaders(w, entry)
 }

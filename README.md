@@ -70,4 +70,4 @@ _In the running instance..._
 
 ## Acknowledgements
 
-Built as part of the **Backend Developer Roadmap** projects: [roadmap.sh](https://roadmap.sh/projects/caching-proxy)
+Built as part of the **Backend Developer Roadmap** projects: [roadmap.sh](https://roadmap.sh/projects/caching-server)

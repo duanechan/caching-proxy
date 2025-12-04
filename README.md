@@ -39,7 +39,7 @@ caching-proxy -h
 Run the proxy with an origin server and port:
 
 ```
-caching-proxy --origin https://dummyjson.com --port:8080
+caching-proxy --origin https://dummyjson.com --port 8080
 ```
 
 Clear Redis cache

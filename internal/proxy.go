@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -12,7 +11,7 @@ type proxy struct {
 	client client
 }
 
-func NewProxy(origin string, port int) (http.Handler, error) {
+func NewProxy(client *client, origin string, port int) (http.Handler, error) {
 	url, err := normalizeURL(origin)
 	if err != nil {
 		return nil, err
@@ -21,30 +20,37 @@ func NewProxy(origin string, port int) (http.Handler, error) {
 	return proxy{
 		port:   port,
 		origin: url,
-		client: *newClient(5 * time.Second),
+		client: *client,
 	}, nil
 }
 
 func (p proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	entry, err := p.client.Get(r.URL.Path)
+	cacheKey := r.URL.RequestURI()
+	fullURL := p.origin + cacheKey
+
+	start := time.Now()
+	entry, err := p.client.Get(cacheKey)
+	end := time.Since(start)
 	if err != nil {
 		errorResponse(w, 400, "Bad Request")
 		return
 	}
 
 	if entry != nil {
-		w.Header().Set("Content-Type", entry.Headers["Content-Type"][0])
+		ServerLog(formatRequestLog(fullURL, end.Milliseconds()))
 		w.Header().Set("X-Cache", "HIT")
-		fmt.Fprint(w, string(entry.Body))
+		setHeaders(w, entry)
 		return
 	}
 
-	fullURL := p.origin + r.URL.Path
+	start = time.Now()
 	res, err := http.Get(fullURL)
+	end = time.Since(start)
 	if err != nil {
 		errorResponse(w, 400, "Bad Request")
 		return
 	}
+	defer res.Body.Close()
 
 	entry, err = newCacheEntry(res)
 	if err != nil {
@@ -52,7 +58,12 @@ func (p proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", entry.Headers["Content-Type"][0])
+	if err := p.client.Add(cacheKey, entry); err != nil {
+		errorResponse(w, 400, "Bad Request")
+		return
+	}
+
+	ServerLog(formatRequestLog(fullURL, end.Milliseconds()))
 	w.Header().Set("X-Cache", "MISS")
-	fmt.Fprint(w, string(entry.Body))
+	setHeaders(w, entry)
 }

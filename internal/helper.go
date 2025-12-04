@@ -8,6 +8,15 @@ import (
 	"strings"
 )
 
+const (
+	Reset  = "\033[0m"
+	Bold   = "\033[1m"
+	Red    = "\033[31m"
+	Green  = "\033[32m"
+	Yellow = "\033[33m"
+	Blue   = "\033[34m"
+)
+
 func normalizeURL(rawURL string) (string, error) {
 	if rawURL == "" {
 		return "", errors.New("missing url argument")
@@ -35,11 +44,22 @@ func normalizeURL(rawURL string) (string, error) {
 	return normalized, nil
 }
 
+func setHeaders(w http.ResponseWriter, entry *CacheEntry) {
+	for k, values := range entry.Headers {
+		for _, v := range values {
+			w.Header().Add(k, v)
+		}
+	}
+
+	if entry.StatusCode > 0 {
+		w.WriteHeader(entry.StatusCode)
+	}
+
+	w.Write(entry.Body)
+}
+
 func errorResponse(w http.ResponseWriter, code int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(message))
 	w.WriteHeader(code)
-}
-
-func payloadResponse(w http.ResponseWriter, code int, entry *CacheEntry) {
 }

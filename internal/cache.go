@@ -7,9 +7,10 @@ import (
 )
 
 type CacheEntry struct {
-	Headers   http.Header `json:"headers"`
-	Body      []byte      `json:"body"`
-	CreatedAt time.Time   `json:"createdAt"`
+	StatusCode int         `json:"statusCode"`
+	Body       []byte      `json:"body"`
+	Headers    http.Header `json:"headers"`
+	CreatedAt  time.Time   `json:"createdAt"`
 }
 
 func newCacheEntry(r *http.Response) (*CacheEntry, error) {
@@ -21,8 +22,9 @@ func newCacheEntry(r *http.Response) (*CacheEntry, error) {
 	}
 
 	return &CacheEntry{
-		Headers:   r.Header,
-		Body:      body,
-		CreatedAt: time.Now(),
+		StatusCode: r.StatusCode,
+		Headers:    r.Header.Clone(),
+		Body:       body,
+		CreatedAt:  time.Now(),
 	}, nil
 }

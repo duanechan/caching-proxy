@@ -29,7 +29,7 @@ func (p proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fullURL := p.origin + cacheKey
 
 	start := time.Now()
-	entry, err := p.client.Get(cacheKey)
+	entry, err := p.client.get(cacheKey)
 	end := time.Since(start)
 	if err != nil {
 		errorResponse(w, 400, "Bad Request")
@@ -50,7 +50,6 @@ func (p proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		errorResponse(w, 400, "Bad Request")
 		return
 	}
-	defer res.Body.Close()
 
 	entry, err = newCacheEntry(res)
 	if err != nil {
@@ -58,7 +57,7 @@ func (p proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := p.client.Add(cacheKey, entry); err != nil {
+	if err := p.client.add(cacheKey, entry); err != nil {
 		errorResponse(w, 400, "Bad Request")
 		return
 	}

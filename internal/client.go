@@ -27,11 +27,11 @@ func NewClient(timeout time.Duration) *client {
 		for msg := range pubsub.Channel() {
 			switch msg.Payload {
 			case "clear-cache":
-				ServerLog(Bold + "--- CACHE CLEARED" + Reset)
+				ServerLog(Bold+"-----", Green+"CACHE CLEARED"+Reset, Bold+"-----"+Reset)
 			case "get-cache":
-				ServerLog(Bold + "--- CACHE HIT" + Reset)
+				ServerLog(Bold+"-----", Blue+"CACHE HIT"+Reset, Bold+"-----"+Reset)
 			case "add-cache":
-				ServerLog(Bold + "--- CACHE MISS" + Reset)
+				ServerLog(Bold+"-----", Red+"CACHE MISS"+Reset, Bold+"-----"+Reset)
 			default:
 				WarnLog("----- UNKNOWN EVENT:", msg.Payload)
 			}
@@ -44,8 +44,8 @@ func NewClient(timeout time.Duration) *client {
 	}
 }
 
-func (c client) Add(key string, entry *CacheEntry) error {
-	value, err := json.Marshal(*entry)
+func (c client) add(key string, entry *CacheEntry) error {
+	value, err := json.Marshal(entry)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (c client) Add(key string, entry *CacheEntry) error {
 	return nil
 }
 
-func (c client) Get(key string) (*CacheEntry, error) {
+func (c client) get(key string) (*CacheEntry, error) {
 	value, err := c.Rdb.Get(context.Background(), key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -79,11 +79,21 @@ func (c client) Get(key string) (*CacheEntry, error) {
 }
 
 func (c client) FlushCache() error {
+	keys, err := c.Rdb.DBSize(context.Background()).Result()
+	if err != nil {
+		return err
+	}
+
+	if keys == 0 {
+		fmt.Println(Bold + Yellow + "No cache to flush." + Reset)
+		return nil
+	}
+
 	if err := c.Rdb.FlushAll(context.Background()).Err(); err != nil {
 		return err
 	}
 
-	fmt.Println("Cache cleared.")
+	fmt.Println(Bold+Green+"Cache cleared!"+Reset, keys, "keys removed.")
 	c.Rdb.Publish(context.Background(), "proxy_control", "clear-cache")
 
 	return nil

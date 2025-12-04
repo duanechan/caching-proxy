@@ -13,13 +13,22 @@ const (
 	Warn
 )
 
+const (
+	Reset  = "\033[0m"
+	Bold   = "\033[1m"
+	Red    = "\033[31m"
+	Green  = "\033[32m"
+	Yellow = "\033[33m"
+	Blue   = "\033[34m"
+)
+
 func printLog(messageType MessageType, message ...any) {
 	switch messageType {
 	case Server:
 		log.Println(append([]any{Green + Bold + "[Caching Proxy]" + Reset}, message...)...)
 	case Error:
 		log.Fatalln(append([]any{Red + Bold + "[Caching Proxy]" + Reset}, message...)...)
-	default:
+	case Warn:
 		log.Println(append([]any{Yellow + Bold + "[Caching Proxy]" + Reset}, message...)...)
 	}
 

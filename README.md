@@ -5,6 +5,10 @@
 
 A small Go HTTP proxy that forwards requests to an origin server and caches the responses in Redis. Helps speed up repeated requests and reduce load on the backend.
 
+This project was built as part of the **Backend Developer Roadmap** projects from [roadmap.sh](https://roadmap.sh).
+
+**Project URL**: [https://roadmap.sh/projects/caching-server](https://roadmap.sh/projects/caching-server)
+
 ## Prerequisites
 
 Ensure [**Redis**](https://redis.io/downloads) is installed and running locally on the default port (6379). Redis is used by this application for caching. 
@@ -42,7 +46,28 @@ Run the proxy with an origin server and port:
 caching-proxy --origin https://dummyjson.com --port 8080
 ```
 
+_On open_
+
+![Cache Miss](example/cache-miss.png)
+
+_On reload_
+
+![Cache Hit](example/cache-hit.png)
+
 Clear Redis cache
 ```
 caching-proxy --clear-cache
 ```
+
+_In another terminal..._
+
+![Cache Hit](example/cache-clear-1.png)
+
+_In the running instance..._
+
+![Cache Hit](example/cache-clear-2.png)
+
+
+## Acknowledgements
+
+Built as part of the **Backend Developer Roadmap** projects: [roadmap.sh](https://roadmap.sh/projects/caching-proxy)

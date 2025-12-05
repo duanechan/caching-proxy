@@ -67,6 +67,9 @@ _In the running instance..._
 
 ![Cache Hit](example/cache-clear-2.png)
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
